@@ -1,3 +1,8 @@
+[![Build Status](https://travis-ci.org/guitmz/gocave.svg?branch=master)](https://travis-ci.org/guitmz/gocave)
+
+[![](https://images.microbadger.com/badges/image/guitmz/gocave.svg)](https://microbadger.com/images/guitmz/gocave "Get your own image badge on microbadger.com")
+
+
 # gocave
 
 Utility to find code caves in ELF files, written in Go.
