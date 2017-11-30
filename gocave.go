@@ -22,11 +22,12 @@ func byteInSlice(a byte, list []byte) bool {
 	return false
 }
 
-func findCave(sectionName string, sectionBody []byte, caveSize int, sectionOffset uint64, sectionAddr uint64, sectionFlags string) {
+func findCave(section *elf.Section, caveSize int) {
 	// For this example, we are looking for 0x00 bytes only, so we create a slice with one element (0x00 in this case).
 	caveBytes := make([]byte, 1)
 	caveBytes[0] = 0x00
 
+	sectionBody, _ := section.Data()
 	caveCount := 0
 	for currentOffset := 0; currentOffset < len(sectionBody); currentOffset++ {
 		currentByte := sectionBody[currentOffset]
@@ -35,12 +36,14 @@ func findCave(sectionName string, sectionBody []byte, caveSize int, sectionOffse
 		} else {
 			if caveCount >= caveSize {
 				fmt.Println("\n[+] CAVE DETECTED!")
-				fmt.Printf("[!] Section Name: %s\n", sectionName)
-				fmt.Printf("[!] Flags: %s\n", sectionFlags)
-				fmt.Printf("[!] Virtual Address: %#x\n", int(sectionAddr)+currentOffset-caveCount)
-				fmt.Printf("[!] Size: %#x\n", caveCount)
-				fmt.Printf("[!] Begin: %#x\n", int(sectionOffset)+currentOffset-caveCount)
-				fmt.Printf("[!] End: %#x\n", int(sectionOffset)+currentOffset)
+				fmt.Printf("[!] Section Name: %s\n", section.Name)
+				fmt.Printf("[!] Section Offset: %#x\n", section.Offset)
+				fmt.Printf("[!] Section Size: %#x (%d bytes)\n", section.Size, int(section.Size))
+				fmt.Printf("[!] Section Flags: %s\n", section.Flags.String())
+				fmt.Printf("[!] Virtual Address: %#x\n", int(section.Addr)+currentOffset-caveCount)
+				fmt.Printf("[!] Cave Begin: %#x\n", int(section.Offset)+currentOffset-caveCount)
+				fmt.Printf("[!] Cave End: %#x\n", int(section.Offset)+currentOffset)
+				fmt.Printf("[!] Cave Size: %#x (%d bytes)\n", caveCount, int(caveCount))
 			}
 			caveCount = 0
 		}
@@ -61,13 +64,7 @@ func main() {
 	caveSize, err := strconv.Atoi(os.Args[2])
 	check(err)
 
-	for i := 0; i < len(elfFile.Sections); i++ {
-		data, _ := elfFile.Sections[i].Data()
-		findCave(elfFile.Sections[i].Name,
-			data,
-			caveSize,
-			elfFile.Sections[i].Offset,
-			elfFile.Sections[i].Addr,
-			elfFile.Sections[i].Flags.String())
+	for _, section := range elfFile.Sections {
+		findCave(section, caveSize)
 	}
 }
